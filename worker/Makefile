@@ -1,0 +1,29 @@
+# VERSION=v1
+# DOCKERUSER=tgwalker93
+
+# build:
+# 	docker build -f Dockerfile -t demucs-worker .
+# push:
+# 	docker tag demucs-worker $(DOCKERUSER)/demucs-worker:$(VERSION)
+# 	docker push $(DOCKERUSER)/demucs-worker:$(VERSION)
+# 	docker tag demucs-worker $(DOCKERUSER)/demucs-worker:latest
+# 	docker push $(DOCKERUSER)/demucs-worker:latest
+current-dir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+
+.PHONY:
+help: ## Display available targets
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {sub("\\\\n",sprintf("\n%22c"," "), $$2);printf " \033[36m%-20s\033[0m  %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+.PHONY:
+run: ## Run the demucs spliting the tracks placed in the input folder
+	docker run --rm -i \
+		--name=demucs \
+		-v $(current-dir)input:/data/input \
+		-v $(current-dir)output:/data/output \
+		-v $(current-dir)models:/data/models \
+		xserrat/facebook-demucs:latest \
+		"python3 -m demucs.separate --out /data/output \
+		/data/input/$(track) --mp3"
+.PHONY:
+build: ## Build docker image with all needed to run the facebook demucs ML code
+	docker build --no-cache -t xserrat/facebook-demucs:latest .

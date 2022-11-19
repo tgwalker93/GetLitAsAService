@@ -1,0 +1,40 @@
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: minio
+#   namespace: default
+# spec:
+#   type: ExternalName
+#   externalName: minio-proj.minio-ns.svc.cluster.local
+
+# apiVersion: apps/v1
+
+# kind: Deployment
+# metadata:
+#   name: minio-demucs-deployment
+#   namespace: default
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: minio-demucs
+#   template:
+#     metadata:
+#       labels:
+#         app: minio-demucs
+#     spec:
+#       containers:
+#       - name: minio-demucs
+#         image: tgwalker93/minio-demucs:v1
+#         env:
+#           - name: MINIO_HOST
+#             value: "minio:9000"
+# ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+  namespace: default
+spec:
+  type: ExternalName
+  externalName: minio-proj.minio-ns.svc.cluster.local
