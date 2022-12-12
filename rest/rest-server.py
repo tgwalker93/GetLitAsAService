@@ -96,7 +96,6 @@ def clean_lemma_counts(lemma_counts):
     # print(len(non_use)) # keeps track of how many lemmas we are removing
     return lc 
 
-
 @app.route('/', methods=['GET'])
 def hello():
     return '<h1> GetLit Server</h1><p> Use a valid endpoint </p>'
@@ -110,36 +109,13 @@ def analyze(profileName):
         log_info("Profile received in Analyze method: " + profileName)
         redisClient.lpush('queue', f"{profileName}")
         response = { "profileName": profileName,
-        "reason": "Profile is being analyzed. This will take roughly 5min."}
+        "response": "Profile is being analyzed. This will take roughly 5min."}
         log_info("analyze was sucessful.")
     except:
         log_debug("analyze had an error.")
         response = {"error": "An error has occured."}
     response = jsonpickle.encode(response)
     return Response(response=response, status=200, mimetype="application/json")
-
-@app.route('/apiv1/separate', methods=['POST'])
-def separate():
-    print("i'm in the separate function")
-    response = {"error": "An error has occured."}
-    try:
-        requestObj = jsonpickle.decode(request.data)
-        print("below is data")   
-        print(requestObj['callback'])   
-        print(requestObj['callback']['data']['mp3'])
-        songName = requestObj['callback']['data']['mp3']
-        base64File = requestObj['mp3']
-        songNameHash = hashlib.sha256(songName.encode('utf-8')).hexdigest()
-        print(songNameHash)
-        redisClient.lpush('queue', f"{songNameHash}:{base64File}")
-        response = { "hash": songNameHash,
-        "reason": "Song enqueued for separation"}
-    except:
-        response = {"error": "An error has occured."}
-    response = jsonpickle.encode(response)
-    return Response(response=response, status=200, mimetype="application/json")
-
-
 
 @app.route('/apiv1/queue', methods=['GET'])
 def queue():
@@ -157,59 +133,6 @@ def queue():
     except:
         log_info("queue has failed.")
         response = {"error": error}
-    response = jsonpickle.encode(response)
-    return Response(response=response, status=200, mimetype="application/json")
-
-@app.route('/apiv1/track/<string:songName>', methods=['GET'])
-def track(songName):
-    songFound = False
-    response = {"error": "An error has occured."}
-    decoded_data = None
-    log_info("Get track was called.")
-    try:
-        print('before i iterate through minio')
-        log_info("before i iterate through minio")
-        for songInOutput in minioClient.list_objects('output', recursive=True):
-            print("I am iterating through output bucket")
-            #print(thing.object_name)
-            if songInOutput.object_name == songName:
-                    songFound = True
-                    #decoded_data=base64.b64decode(songInOutput.binary)              
-                    minioClient.fget_object("output", songInOutput.object_name, songInOutput.object_name)
-                    file = open(songInOutput.object_name, 'rb')
-                    decoded_data = file.read()            
-        if songFound == False:
-            response = { "songName": songName, "message": "I could not find a song with the given song name."}
-    except:
-        response = {"error": "An error has occured."}
-    if songFound == False:
-        response = jsonpickle.encode(response)
-        return Response(response=response, status=200, mimetype="application/json")
-    else:
-        response = make_response(decoded_data)
-        response.headers.set('Content-Type', 'audio/mpeg')
-        response.headers.set(
-            'Content-Disposition', 'attachment', filename=songName + '.mp3')
-        return response
-            
-@app.route('/apiv1/remove/<string:songName>', methods=['GET'])
-def remove(songName):
-    songFound = False
-    response = {"error": "An error has occured."}
-    try:
-        print('before i iterate through minio')
-        for songInOutput in minioClient.list_objects('output', recursive=True):
-            print("I am iterating through output bucket")
-            #print(thing.object_name)
-            if songInOutput.object_name == songName:
-                songFound = True
-                minioClient.remove_object("output", songInOutput.object_name)
-        if songFound:
-            response = { "songName": songName, "message": "The song was successfully deleted."}
-        else:
-            response = { "songName": songName, "message": "I could not find a song with the given name."}
-    except:
-        response = {"error": "An error has occured."}
     response = jsonpickle.encode(response)
     return Response(response=response, status=200, mimetype="application/json")
 
