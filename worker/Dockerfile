@@ -1,17 +1,25 @@
 FROM python:3.8
+FROM tensorflow/tensorflow:2.1.0-py3
 
-FROM xserrat/facebook-demucs:latest
+# FROM xserrat/facebook-demucs:latest
 LABEL MAINTAINER="tgwalker93@gmail.com"
 
 RUN pip install redis requests minio jsonpickle
+RUN pip3 install simplemma
+RUN pip3 install keras==2.3.1
+RUN pip3 install tensorflow==2.1
+RUN pip3 install redis
+RUN pip3 install flask
+RUN pip3 install jsonpickle
+RUN pip3 install minio
 
-RUN pip install minio
 COPY ./minio-config.yaml /
 
 WORKDIR /srv
-COPY  worker.py /srv
+#COPY  worker.py /srv
+COPY . /srv
 
-RUN mkdir /srv/output
+#RUN mkdir /srv/output
 
 ENTRYPOINT [ "python3", "./worker.py"]
 

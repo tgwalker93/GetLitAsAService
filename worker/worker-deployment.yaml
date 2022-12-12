@@ -17,13 +17,27 @@ spec:
       containers:
       - name: worker
         image: tgwalker93/worker-server
+        resources:
+          requests:
+            cpu: 250m
+            memory: 100Mi
         env:
         - name: REDIS_HOST
           value: "redis"
         - name: REDIS_PORT
           value: "6379"        
         - name: MINIO_HOST
-          value: "minio:9000"                
+          value: "minio:9000"        
+        # resources:
+        #   limits:
+        #     cpu: "3"
+        #   requests:
+        #     cpu: "1"
+      # resources:
+      #   limits:
+      #     nvidia.com/gpu: 1
+      # nodeSelector:
+      #   cloud.google.com/gke-accelerator: nvidia-t4
         # env:
         #   - name: MINIO_HOST
         #     value: "minio:9000"      

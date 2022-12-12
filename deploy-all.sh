@@ -12,3 +12,6 @@ kubectl apply -f worker/worker-deployment.yaml
 kubectl apply -f minio/minio-external-service.yaml
 
 kubectl apply -f rest/rest-ingress.yaml
+
+#For SSH into a specific pod
+#kubectl exec -it pod/worker-deployment-668d7d559-dvvs2 -- bash
